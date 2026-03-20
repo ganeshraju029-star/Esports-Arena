@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { authAPI, handleApiError } from '@/lib/api';
 
 interface User {
   id: string;
@@ -129,8 +128,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: '123',
           username: email.split('@')[0],
           email: email,
-          role: 'player',
-          walletBalance: 1000,
+          role: 'player' as const,
+          gameIDs: {},
+          wallet: {
+            balance: 1000,
+            totalEarnings: 0,
+            totalSpent: 0
+          },
+          stats: {
+            totalTournaments: 0,
+            totalWins: 0,
+            totalKills: 0,
+            totalPoints: 0
+          },
+          profile: {
+            displayName: email.split('@')[0],
+            avatar: undefined,
+            bio: undefined
+          },
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
@@ -174,8 +189,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: '123',
           username: userData.username,
           email: userData.email,
-          role: 'player',
-          walletBalance: 1000,
+          role: 'player' as const,
+          gameIDs: userData.gameIDs || {},
+          wallet: {
+            balance: 1000,
+            totalEarnings: 0,
+            totalSpent: 0
+          },
+          stats: {
+            totalTournaments: 0,
+            totalWins: 0,
+            totalKills: 0,
+            totalPoints: 0
+          },
+          profile: {
+            displayName: userData.username,
+            avatar: undefined,
+            bio: undefined
+          },
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };

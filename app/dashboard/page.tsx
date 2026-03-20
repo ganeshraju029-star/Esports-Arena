@@ -21,7 +21,6 @@ import {
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { userAPI, tournamentAPI } from "@/lib/api"
 
 const stats = [
   { label: "Tournaments Joined", value: "24", icon: Trophy, change: "+3 this month" },

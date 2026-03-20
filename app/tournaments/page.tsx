@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Filter, X, Loader2, Gamepad2, Trophy, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { tournamentAPI } from "@/lib/api"
 import { useAuth } from "@/contexts/AuthContext"
 
 export default function TournamentsPage() {

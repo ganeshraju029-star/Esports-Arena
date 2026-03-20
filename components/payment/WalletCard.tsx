@@ -9,9 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Wallet, Plus, ArrowUpRight, Loader2, IndianRupee } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { paymentAPI } from '@/lib/api';
 import { razorpayService } from '@/lib/razorpay';
-import { handleApiError } from '@/lib/api';
 
 export default function WalletCard() {
   const { user } = useAuth();

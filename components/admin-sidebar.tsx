@@ -26,14 +26,9 @@ const sidebarLinks = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
-export function AdminSidebar({ activeSection, setActiveSection }: { activeSection: string; setActiveSection: (section: string) => void }) {
+export function AdminSidebar() {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-
-  const handleNavClick = (section: string) => {
-    setActiveSection(section)
-    setIsMobileOpen(false)
-  }
 
   return (
     <>
@@ -80,10 +75,7 @@ export function AdminSidebar({ activeSection, setActiveSection }: { activeSectio
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    handleNavClick(link.href.replace('/admin/', '') || 'overview')
-                  }}
+                  onClick={() => setIsMobileOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
                     isActive

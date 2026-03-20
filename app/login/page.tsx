@@ -18,7 +18,7 @@ function LoginContent() {
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login"
   const isAdmin = searchParams.get("role") === "admin"
   
-  const { login, register, isLoading } = useAuth()
+  const { login, register, isLoading, user } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [activeTab, setActiveTab] = useState(initialMode)
@@ -39,7 +39,9 @@ function LoginContent() {
       if (result.success) {
         setSuccess("Login successful! Redirecting...")
         setTimeout(() => {
-          if (isAdmin) {
+          // Check user role from localStorage since user state might not be updated yet
+          const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+          if (storedUser.role === 'admin') {
             router.push("/admin")
           } else {
             router.push("/dashboard")

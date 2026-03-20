@@ -74,19 +74,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isAuthenticated = !!user && !!token;
   const isAdmin = user?.role === 'admin';
 
+  // Update localStorage whenever user data changes
+  useEffect(() => {
+    if (user && typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  }, [user]);
+
   // Initialize auth from localStorage
   useEffect(() => {
     const initAuth = async () => {
       try {
         const storedToken = localStorage.getItem('token');
         const storedRefreshToken = localStorage.getItem('refreshToken');
+        const storedUser = localStorage.getItem('user');
 
-        if (storedToken && storedRefreshToken) {
+        if (storedToken && storedRefreshToken && storedUser) {
           setToken(storedToken);
           setRefreshToken(storedRefreshToken);
           
-          // Verify token by fetching user profile
-          await fetchUserProfile();
+          // Restore user from localStorage
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          } catch (parseError) {
+            console.error('Failed to parse stored user:', parseError);
+            clearAuth();
+            return;
+          }
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -97,6 +112,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     initAuth();
+
+    // Listen for storage events to handle multi-tab synchronization
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user' && !e.newValue) {
+        // User logged out in another tab
+        clearAuth();
+      } else if (e.key === 'user' && e.newValue) {
+        // User logged in or updated in another tab
+        try {
+          const parsedUser = JSON.parse(e.newValue);
+          setUser(parsedUser);
+        } catch (parseError) {
+          console.error('Failed to parse updated user:', parseError);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const fetchUserProfile = async () => {
@@ -240,6 +277,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // In static export, just clear local state
       clearAuth();
+      
+      // Redirect to home page after logout
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -251,6 +293,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setRefreshToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
   };
 
   const refreshAuth = async () => {

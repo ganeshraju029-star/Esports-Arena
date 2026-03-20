@@ -1,307 +1,168 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
 import { AdminSidebar } from "@/components/admin-sidebar"
-import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/contexts/AuthContext"
+import { Badge } from "@/components/ui/badge"
 import {
   Trophy,
   Users,
-  Gamepad2,
   DollarSign,
-  Activity,
-  Eye,
-  Edit,
-  Trash2,
+  Gamepad2,
+  Plus,
+  ArrowRight,
   TrendingUp,
-  Calendar,
-  Clock,
 } from "lucide-react"
+import Link from "next/link"
 
-export default function AdminPage() {
-  const { user } = useAuth()
-  const [stats, setStats] = useState({
-    totalTournaments: 0,
-    totalUsers: 0,
-    activeTournaments: 0,
-    totalRevenue: 0,
-  })
-  const [recentTournaments, setRecentTournaments] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+const stats = [
+  { label: "Total Users", value: "12,458", icon: Users, change: "+245 this week", trend: "up" },
+  { label: "Active Tournaments", value: "28", icon: Trophy, change: "+5 this month", trend: "up" },
+  { label: "Total Revenue", value: "$45,320", icon: DollarSign, change: "+12% growth", trend: "up" },
+  { label: "Matches Today", value: "156", icon: Gamepad2, change: "18 ongoing", trend: "neutral" },
+]
 
-  useEffect(() => {
-    // Check if user is admin
-    if (!user || user.role !== 'admin') {
-      window.location.href = '/login'
-      return
-    }
+const recentTournaments = [
+  { id: "1", title: "Free Fire Championship", game: "Free Fire", participants: 87, status: "upcoming", date: "Mar 25, 2026" },
+  { id: "2", title: "PUBG Elite Showdown", game: "PUBG", participants: 32, status: "upcoming", date: "Mar 26, 2026" },
+  { id: "3", title: "Solo Survival League", game: "Free Fire", participants: 145, status: "live", date: "Mar 20, 2026" },
+  { id: "4", title: "Duo Destruction", game: "PUBG", participants: 24, status: "upcoming", date: "Mar 28, 2026" },
+]
 
-    // Load admin data
-    const loadAdminData = async () => {
-      try {
-        setLoading(true)
-        
-        // Check if we're in production (Netlify) or development
-        const isProduction = process.env.NODE_ENV === 'production';
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        
-        // In production (Netlify), use mock data
-        if (isProduction && !apiBaseUrl.includes('localhost')) {
-          // Mock admin stats for Netlify demo
-          setStats({
-            totalTournaments: 25,
-            totalUsers: 1240,
-            activeTournaments: 8,
-            totalRevenue: 125000,
-          });
-          
-          // Mock recent tournaments
-          setRecentTournaments([
-            {
-              _id: '1',
-              title: 'Free Fire Championship',
-              game: 'freefire',
-              status: 'active',
-              participants: 85,
-              prizePool: 5000,
-              createdAt: new Date(Date.now() - 86400000).toISOString(),
-            },
-            {
-              _id: '2',
-              title: 'PUBG Elite Showdown',
-              game: 'pubg',
-              status: 'completed',
-              participants: 50,
-              prizePool: 10000,
-              createdAt: new Date(Date.now() - 172800000).toISOString(),
-            },
-            {
-              _id: '3',
-              title: 'Call of Duty Masters',
-              game: 'cod',
-              status: 'upcoming',
-              participants: 0,
-              prizePool: 15000,
-              createdAt: new Date(Date.now() - 259200000).toISOString(),
-            },
-          ]);
-        } else {
-          // In development, fetch from real API
-          const token = localStorage.getItem('token');
-          
-          const [statsResponse, tournamentsResponse] = await Promise.all([
-            fetch(`${apiBaseUrl}/admin/stats`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            }),
-            fetch(`${apiBaseUrl}/admin/tournaments?limit=5`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            }),
-          ]);
-          
-          if (statsResponse.ok) {
-            const statsData = await statsResponse.json();
-            setStats(statsData.data);
-          }
-          
-          if (tournamentsResponse.ok) {
-            const tournamentsData = await tournamentsResponse.json();
-            setRecentTournaments(tournamentsData.data);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load admin data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+const recentUsers = [
+  { id: "1", name: "John Doe", email: "john@example.com", joinedDate: "Mar 20, 2026", status: "active" },
+  { id: "2", name: "Sarah Smith", email: "sarah@example.com", joinedDate: "Mar 19, 2026", status: "active" },
+  { id: "3", name: "Mike Johnson", email: "mike@example.com", joinedDate: "Mar 18, 2026", status: "pending" },
+  { id: "4", name: "Emma Wilson", email: "emma@example.com", joinedDate: "Mar 17, 2026", status: "active" },
+]
 
-    loadAdminData();
-  }, [user]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-        <Footer />
-      </div>
-    )
-  }
-
-  const statCards = [
-    {
-      title: "Total Tournaments",
-      value: stats.totalTournaments,
-      icon: Trophy,
-      change: "+3 this month",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
-    {
-      title: "Total Users",
-      value: stats.totalUsers,
-      icon: Users,
-      change: "+120 this week",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-    {
-      title: "Active Tournaments",
-      value: stats.activeTournaments,
-      icon: Activity,
-      change: "+2 today",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-    },
-    {
-      title: "Total Revenue",
-      value: `₹${stats.totalRevenue.toLocaleString()}`,
-      icon: DollarSign,
-      change: "+₹15,000 this month",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-  ];
-
+export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <div className="flex">
-        <AdminSidebar />
-        
-        <main className="flex-1 p-8 lg:ml-64">
+      <AdminSidebar />
+
+      <main className="lg:ml-64 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-              <p className="text-muted-foreground">
-                Welcome back, {user?.profile.displayName || user?.username}!
+              <h1 className="font-[var(--font-orbitron)] text-2xl sm:text-3xl font-bold text-foreground">
+                Admin <span className="text-primary">Dashboard</span>
+              </h1>
+              <p className="mt-2 text-muted-foreground">
+                Manage tournaments, users, and platform settings
               </p>
             </div>
-            <div className="mt-4 md:mt-0 flex gap-2">
-              <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                Last 7 days
+            <Link href="/admin/create">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Plus className="h-5 w-5 mr-2" />
+                Create Tournament
               </Button>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" size="sm">
-                Download Report
-              </Button>
-            </div>
+            </Link>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {statCards.map((stat, index) => (
-              <Card key={index} className="p-6 border-border bg-card hover:shadow-lg transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                      <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                      <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {stats.map((stat, index) => (
+              <Card key={index} className="p-5 bg-card border-border">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
+                    <div className="flex items-center gap-1 mt-2">
+                      {stat.trend === "up" && <TrendingUp className="h-4 w-4 text-green-500" />}
+                      <p className="text-xs text-green-500">{stat.change}</p>
                     </div>
                   </div>
-                </div>
-                <div className="mt-4 flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                  <span className="text-xs text-green-500 font-medium">{stat.change}</span>
+                  <div className="p-3 rounded-lg bg-primary/10">
+                    <stat.icon className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
 
-          {/* Recent Tournaments */}
-          <Card className="p-6 border-border bg-card">
-            <div className="flex items-center justify-between mb-6">
-              <div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Recent Tournaments */}
+            <Card className="p-6 bg-card border-border">
+              <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-foreground">Recent Tournaments</h2>
-                <p className="text-sm text-muted-foreground mt-1">Manage your latest tournaments</p>
+                <Link href="/admin/tournaments">
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
+                    View all <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
-              <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10">
-                View All
-              </Button>
-            </div>
 
-            <div className="space-y-4">
-              {recentTournaments.map((tournament: any) => (
-                <div 
-                  key={tournament._id} 
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <Gamepad2 className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">{tournament.title}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {tournament.game.toUpperCase()}
-                        </Badge>
-                        <Badge 
-                          variant={tournament.status === 'active' ? 'default' : tournament.status === 'completed' ? 'secondary' : 'outline'}
-                          className="text-xs"
-                        >
-                          {tournament.status}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(tournament.createdAt).toLocaleDateString()}
-                        </span>
+              <div className="space-y-4">
+                {recentTournaments.map((tournament) => (
+                  <div
+                    key={tournament.id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground truncate">{tournament.title}</h3>
+                      <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                        <span>{tournament.game}</span>
+                        <span>•</span>
+                        <span>{tournament.participants} participants</span>
                       </div>
                     </div>
+                    <Badge
+                      className={
+                        tournament.status === "live"
+                          ? "bg-red-500/90 text-foreground"
+                          : "bg-primary text-primary-foreground"
+                      }
+                    >
+                      {tournament.status === "live" ? "LIVE" : "Upcoming"}
+                    </Badge>
                   </div>
-                  
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-foreground">{tournament.participants} players</p>
-                      <p className="text-xs text-muted-foreground">Prize: ₹{tournament.prizePool.toLocaleString()}</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {recentTournaments.length === 0 && (
-              <div className="text-center py-12">
-                <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No tournaments yet</h3>
-                <p className="text-muted-foreground mb-4">Create your first tournament to get started</p>
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Create Tournament
-                </Button>
+                ))}
               </div>
-            )}
-          </Card>
-        </main>
-      </div>
-      
-      <Footer />
+            </Card>
+
+            {/* Recent Users */}
+            <Card className="p-6 bg-card border-border">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-foreground">Recent Users</h2>
+                <Link href="/admin/users">
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
+                    View all <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="space-y-4">
+                {recentUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-semibold">
+                          {user.name.split(" ").map((n) => n[0]).join("")}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-foreground">{user.name}</h3>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                    <Badge
+                      variant={user.status === "active" ? "default" : "secondary"}
+                      className={user.status === "active" ? "bg-green-500/20 text-green-500 border-green-500/30" : ""}
+                    >
+                      {user.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </main>
     </div>
   )
 }

@@ -119,8 +119,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // For static build on Netlify, use mock authentication
-      if (typeof window !== 'undefined') {
+      // For static build on Netlify, always use mock authentication
+      // Check if we're in a browser environment
+      const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+      
+      if (isBrowser) {
         // Mock successful login for demo purposes
         const mockUser = {
           id: '123',
@@ -146,32 +149,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: true, message: 'Login successful' };
       }
       
-      // Fallback to API call if not in browser
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      const { user: userData, token: authToken, refreshToken: authRefreshToken } = data.data;
-
-      localStorage.setItem('token', authToken);
-      localStorage.setItem('refreshToken', authRefreshToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      setUser(userData);
-      setToken(authToken);
-      setRefreshToken(authRefreshToken);
-
-      return { success: true, message: 'Login successful' };
+      // This should never execute in Netlify static deployment
+      console.warn('Login attempted in non-browser environment');
+      return { success: false, message: 'Login not available in this environment' };
     } catch (error: any) {
       console.error('Login error:', error);
       return { success: false, message: error.message || 'Login failed' };
@@ -184,16 +164,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // For static build on Netlify, use mock registration
-      if (typeof window !== 'undefined') {
+      // For static build on Netlify, always use mock authentication
+      // Check if we're in a browser environment
+      const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+      
+      if (isBrowser) {
         // Mock successful registration for demo purposes
         const mockUser = {
           id: '123',
           username: userData.username,
           email: userData.email,
-          role: userData.role || 'player',
+          role: 'player',
           walletBalance: 1000,
-          gameIDs: userData.gameIDs || {},
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
@@ -212,51 +194,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: true, message: 'Registration successful' };
       }
       
-      // Fallback to API call if not in browser
-      // Create FormData for register API
-      const formData = new FormData();
-      formData.append('username', userData.username);
-      formData.append('email', userData.email);
-      formData.append('password', userData.password);
-      formData.append('confirmPassword', userData.confirmPassword);
-      formData.append('role', userData.role || 'player');
-      
-      if (userData.gameIDs.freeFire) {
-        formData.append('freeFire', userData.gameIDs.freeFire);
-      }
-      if (userData.gameIDs.pubg) {
-        formData.append('pubg', userData.gameIDs.pubg);
-      }
-      if (userData.gameIDs.freeFireLevel) {
-        formData.append('freeFireLevel', userData.gameIDs.freeFireLevel.toString());
-      }
-      if (userData.gameIDs.pubgLevel) {
-        formData.append('pubgLevel', userData.gameIDs.pubgLevel.toString());
-      }
-
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      const { user: newUser, token: newToken, refreshToken: newRefreshToken } = data.data;
-      
-      setToken(newToken);
-      setRefreshToken(newRefreshToken);
-      setUser(newUser);
-      
-      // Store in localStorage
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('refreshToken', newRefreshToken);
-      
-      return { success: true, message: 'Registration successful' };
+      // This should never execute in Netlify static deployment
+      console.warn('Registration attempted in non-browser environment');
+      return { success: false, message: 'Registration not available in this environment' };
     } catch (error: any) {
+      console.error('Registration error:', error);
       return { success: false, message: error.message || 'Registration failed' };
     } finally {
       setIsLoading(false);
@@ -282,9 +224,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshAuth = async () => {
     try {
-      if (refreshToken) {
-        const response = await authAPI.refresh(refreshToken);
-        const { token: newToken, refreshToken: newRefreshToken } = response.data;
+      if (refreshToken && typeof window !== 'undefined') {
+        // For static build, just generate new mock tokens
+        const newToken = 'mock_jwt_token_' + Date.now();
+        const newRefreshToken = 'mock_refresh_token_' + Date.now();
         
         setToken(newToken);
         setRefreshToken(newRefreshToken);
@@ -292,7 +235,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem('token', newToken);
         localStorage.setItem('refreshToken', newRefreshToken);
         
-        await fetchUserProfile();
+        // Skip fetchUserProfile for static build
       }
     } catch (error) {
       console.error('Token refresh failed:', error);

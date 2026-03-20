@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 
 export default function TournamentsPage() {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, token } = useAuth()
   const [tournaments, setTournaments] = useState<any[]>([])
   const [featuredTournaments, setFeaturedTournaments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,74 +26,79 @@ export default function TournamentsPage() {
   useEffect(() => {
     const fetchTournaments = async () => {
       try {
-        // Check if we're in a browser environment (static deployment)
-        const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+        setLoading(true);
         
-        if (isBrowser) {
-          // Mock data for static deployment
-          const mockTournaments = {
-            data: {
-              data: {
-                tournaments: [
-                  {
-                    _id: '1',
-                    title: 'Free Fire Championship',
-                    game: 'freefire',
-                    mode: 'squad',
-                    entryFee: 0,
-                    prizePool: 5000,
-                    maxPlayers: 100,
-                    joinedPlayers: [],
-                    status: 'upcoming',
-                    schedule: {
-                      tournamentStart: new Date(Date.now() + 86400000).toISOString()
-                    },
-                    isJoined: false,
-                    canJoin: true
-                  },
-                  {
-                    _id: '2',
-                    title: 'PUBG Elite Showdown',
-                    game: 'pubg',
-                    mode: 'solo',
-                    entryFee: 100,
-                    prizePool: 10000,
-                    maxPlayers: 50,
-                    joinedPlayers: [],
-                    status: 'upcoming',
-                    schedule: {
-                      tournamentStart: new Date(Date.now() + 172800000).toISOString()
-                    },
-                    isJoined: false,
-                    canJoin: true
-                  }
-                ]
-              }
+        // Check if we're in production (Netlify) or development
+        const isProduction = process.env.NODE_ENV === 'production';
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        
+        // In production (Netlify), use mock data
+        if (isProduction && !apiBaseUrl.includes('localhost')) {
+          // Mock data for Netlify demo
+          const mockTournaments = [
+            {
+              _id: '1',
+              title: 'Free Fire Championship',
+              game: 'freefire',
+              mode: 'squad',
+              entryFee: 0,
+              prizePool: 5000,
+              maxPlayers: 100,
+              joinedPlayers: [],
+              status: 'upcoming',
+              schedule: {
+                tournamentStart: new Date(Date.now() + 86400000).toISOString()
+              },
+              isJoined: false,
+              canJoin: true
+            },
+            {
+              _id: '2',
+              title: 'PUBG Elite Showdown',
+              game: 'pubg',
+              mode: 'solo',
+              entryFee: 100,
+              prizePool: 10000,
+              maxPlayers: 50,
+              joinedPlayers: [],
+              status: 'upcoming',
+              schedule: {
+                tournamentStart: new Date(Date.now() + 172800000).toISOString()
+              },
+              isJoined: false,
+              canJoin: true
             }
-          };
+          ];
           
-          const mockFeatured = {
-            data: {
-              data: {
-                tournaments: mockTournaments.data.data.tournaments.slice(0, 2)
-              }
-            }
-          };
-
-          setTournaments(mockTournaments.data.data.tournaments)
-          setFeaturedTournaments(mockFeatured.data.data.tournaments)
+          setTournaments(mockTournaments);
+          setFeaturedTournaments(mockTournaments.slice(0, 2));
         } else {
-          // This should not execute in Netlify static deployment
-          console.warn('Tournament data fetch attempted in non-browser environment');
-          setTournaments([]);
-          setFeaturedTournaments([]);
+          // In development, fetch from real API
+          const params = new URLSearchParams();
+          if (gameFilter !== 'all') params.append('game', gameFilter);
+          if (modeFilter !== 'all') params.append('mode', modeFilter);
+          if (statusFilter !== 'all') params.append('status', statusFilter);
+          if (searchTerm) params.append('search', searchTerm);
+          
+          const response = await fetch(`${apiBaseUrl}/tournaments?${params.toString()}`);
+          const data = await response.json();
+          
+          if (response.ok && data.data) {
+            setTournaments(data.data.tournaments || []);
+            setFeaturedTournaments((data.data.tournaments || []).slice(0, 3));
+          } else {
+            setTournaments([]);
+            setFeaturedTournaments([]);
+          }
         }
       } catch (error) {
-        console.error('Failed to fetch tournaments:', error)
+        console.error('Failed to fetch tournaments:', error);
+        setTournaments([]);
+        setFeaturedTournaments([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     fetchTournaments()
   }, [searchTerm, gameFilter, modeFilter, statusFilter])
@@ -104,24 +109,39 @@ export default function TournamentsPage() {
       return
     }
 
+    // Check if we're in production (Netlify) or development
+    const isProduction = process.env.NODE_ENV === 'production';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    
+    // In production (Netlify), use mock join
+    if (isProduction && !apiBaseUrl.includes('localhost')) {
+      alert('Successfully joined tournament! (Demo Mode - Backend not connected)');
+      window.location.reload();
+      return;
+    }
+    
+    // In development, use real API call
     try {
-      // Check if we're in a browser environment (static deployment)
-      const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+      const response = await fetch(`${apiBaseUrl}/tournaments/${tournamentId}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
-      if (isBrowser) {
-        // Mock tournament join for static deployment
-        console.log('Joined tournament:', tournamentId);
-        // Show success message or update UI
+      const data = await response.json();
+      
+      if (response.ok) {
         alert('Successfully joined tournament!');
-        // Refresh tournaments
+        // Refresh tournaments list
         window.location.reload();
       } else {
-        // This should not execute in Netlify static deployment
-        console.warn('Tournament join attempted in non-browser environment');
+        alert(data.message || 'Failed to join tournament');
       }
     } catch (error) {
-      console.error('Failed to join tournament:', error)
-      alert('Failed to join tournament. Please try again.')
+      console.error('Failed to join tournament:', error);
+      alert('Network error. Please ensure the backend server is running.');
     }
   }
 

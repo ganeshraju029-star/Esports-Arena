@@ -155,12 +155,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // For static build on Netlify, always use mock authentication
-      // Check if we're in a browser environment
-      const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+      // Check if we're in production (Netlify) or development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       
-      if (isBrowser) {
-        // Mock successful login for demo purposes
+      // In production (Netlify), use mock authentication
+      if (isProduction && !apiBaseUrl.includes('localhost')) {
+        // Mock successful login for demo purposes on Netlify
         const mockUser = {
           id: '123',
           username: email.split('@')[0],
@@ -198,15 +199,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(mockToken);
         setRefreshToken(mockRefreshToken);
         
-        return { success: true, message: 'Login successful' };
+        return { success: true, message: 'Login successful (Demo Mode)' };
       }
       
-      // This should never execute in Netlify static deployment
-      console.warn('Login attempted in non-browser environment');
-      return { success: false, message: 'Login not available in this environment' };
+      // In development, use real API call
+      const response = await fetch(`${apiBaseUrl}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        
+        setUser(data.data.user);
+        setToken(data.token);
+        setRefreshToken(data.refreshToken);
+        
+        return { success: true, message: data.message || 'Login successful' };
+      } else {
+        return { success: false, message: data.message || 'Login failed' };
+      }
     } catch (error: any) {
       console.error('Login error:', error);
-      return { success: false, message: error.message || 'Login failed' };
+      return { 
+        success: false, 
+        message: error.message || 'Network error. Please ensure the backend server is running.' 
+      };
     } finally {
       setIsLoading(false);
     }
@@ -216,12 +241,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // For static build on Netlify, always use mock authentication
-      // Check if we're in a browser environment
-      const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+      // Check if we're in production (Netlify) or development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       
-      if (isBrowser) {
-        // Mock successful registration for demo purposes
+      // In production (Netlify), use mock registration
+      if (isProduction && !apiBaseUrl.includes('localhost')) {
+        // Mock successful registration for demo purposes on Netlify
         const mockUser = {
           id: '123',
           username: userData.username,
@@ -259,15 +285,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(mockToken);
         setRefreshToken(mockRefreshToken);
         
-        return { success: true, message: 'Registration successful' };
+        return { success: true, message: 'Registration successful (Demo Mode)' };
       }
       
-      // This should never execute in Netlify static deployment
-      console.warn('Registration attempted in non-browser environment');
-      return { success: false, message: 'Registration not available in this environment' };
+      // In development, use real API call
+      const response = await fetch(`${apiBaseUrl}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        
+        setUser(data.data.user);
+        setToken(data.token);
+        setRefreshToken(data.refreshToken);
+        
+        return { success: true, message: data.message || 'Registration successful' };
+      } else {
+        return { success: false, message: data.message || 'Registration failed' };
+      }
     } catch (error: any) {
       console.error('Registration error:', error);
-      return { success: false, message: error.message || 'Registration failed' };
+      return { 
+        success: false, 
+        message: error.message || 'Network error. Please ensure the backend server is running.' 
+      };
     } finally {
       setIsLoading(false);
     }

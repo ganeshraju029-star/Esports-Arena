@@ -76,44 +76,52 @@ A comprehensive esports tournament platform for Free Fire and PUBG Mobile with i
 
 ## 🌐 Deployment
 
-### Netlify Deployment
+### Quick Deploy to Netlify
 
-1. **Push to GitHub** (Already done)
-   ```bash
-   git push origin master
-   ```
+**🚀 One-Click Deploy:**
 
-2. **Connect to Netlify**
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/ganeshraju029-star/Esports-Arena)
+
+### Manual Deployment
+
+#### Frontend (Netlify)
+
+1. **Connect to Netlify**
    - Go to [Netlify](https://netlify.com)
    - Click "New site from Git"
    - Connect your GitHub repository
-   - Select "Esports-Arena" repository
 
-3. **Build Settings**
+2. **Build Settings**
    ```
    Build command: npm run build
-   Publish directory: .next
+   Publish directory: out
    ```
 
-4. **Environment Variables**
-   - Set `NEXT_PUBLIC_RAZORPAY_KEY_ID` in Netlify environment variables
-
-5. **Deploy**
-   - Click "Deploy site"
-   - Your site will be live at a random Netlify URL
-
-### Vercel Deployment (Alternative)
-
-1. **Push to GitHub**
-   ```bash
-   git push origin master
+3. **Environment Variables** (in Netlify dashboard)
+   ```
+   NODE_VERSION=20
+   NPM_VERSION=10
+   NEXT_PUBLIC_RAZORPAY_KEY_ID=your_key_here
    ```
 
-2. **Deploy to Vercel**
-   - Go to [Vercel](https://vercel.com)
-   - Click "New Project"
-   - Import your GitHub repository
-   - Deploy
+4. **Optional: Backend URL** (for full functionality)
+   ```
+   NEXT_PUBLIC_API_URL=https://your-backend.railway.app/api
+   NEXT_PUBLIC_SOCKET_URL=https://your-backend.railway.app
+   ```
+
+#### Backend (Railway.app - Optional)
+
+For full functionality, deploy the backend separately:
+
+1. Go to [Railway](https://railway.app)
+2. Create new project → Deploy from GitHub
+3. Select `backend` folder as root
+4. Add environment variables from `backend/.env.example`
+5. Deploy and get your backend URL
+6. Update frontend environment variables on Netlify
+
+**See detailed deployment guide in `DEPLOYMENT.md`**
 
 ## 🔧 Configuration
 

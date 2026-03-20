@@ -72,7 +72,7 @@ const notifications = [
 ]
 
 export default function DashboardPage() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, token } = useAuth()
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [userStats, setUserStats] = useState<any>(null)
   const [userTournaments, setUserTournaments] = useState<any[]>([])
@@ -80,41 +80,48 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return
+      if (!user || !token) return
 
       try {
-        // Check if we're in a browser environment (static deployment)
-        const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+        setLoading(true);
         
-        if (isBrowser) {
-          // Mock data for static deployment
+        // Check if we're in production (Netlify) or development
+        const isProduction = process.env.NODE_ENV === 'production';
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        
+        // In production (Netlify), use mock data
+        if (isProduction && !apiBaseUrl.includes('localhost')) {
           const mockStats = {
-            data: {
-              data: {
-                stats: {
-                  totalTournaments: 0,
-                  totalWins: 0,
-                  totalKills: 0,
-                  totalPoints: 0
-                },
-                recentActivity: []
-              }
-            }
+            totalTournaments: 0,
+            totalWins: 0,
+            totalKills: 0,
+            totalPoints: 0
           };
-          
-          const mockTournaments = {
-            data: {
-              data: {
-                tournaments: []
-              }
-            }
-          };
-
-          setUserStats(mockStats.data.data.stats)
-          setUserTournaments(mockTournaments.data.data.tournaments)
+          setUserStats(mockStats);
+          setUserTournaments([]);
         } else {
-          // This should not execute in Netlify static deployment
-          console.warn('Dashboard data fetch attempted in non-browser environment');
+          // In development, fetch from real API
+          const statsResponse = await fetch(`${apiBaseUrl}/users/stats`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          const tournamentsResponse = await fetch(`${apiBaseUrl}/users/tournaments`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (statsResponse.ok) {
+            const statsData = await statsResponse.json();
+            setUserStats(statsData.data?.data || null);
+          }
+          
+          if (tournamentsResponse.ok) {
+            const tournamentsData = await tournamentsResponse.json();
+            setUserTournaments(tournamentsData.data?.data?.tournaments || []);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)
@@ -123,12 +130,12 @@ export default function DashboardPage() {
       }
     }
 
-    if (user) {
+    if (user && token) {
       fetchData()
     } else {
       setLoading(false)
     }
-  }, [user])
+  }, [user, token])
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text)

@@ -7,6 +7,11 @@ const nextConfig = {
   },
   assetPrefix: process.env.NODE_ENV === 'production' ? '' : undefined,
   basePath: process.env.NODE_ENV === 'production' ? '' : undefined,
+  distDir: '.next',
+  generateEtags: false,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  swcMinify: true,
 }
 
 module.exports = nextConfig

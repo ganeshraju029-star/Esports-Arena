@@ -161,15 +161,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const useMockAuth = !apiBaseUrl || apiBaseUrl.includes('localhost') || process.env.NODE_ENV === 'production';
       
       if (useMockAuth) {
+        // Check if this is admin login
+        const isAdminEmail = email.toLowerCase().includes('admin') || 
+                            email === 'admin@esportsarena.com' ||
+                            email.toLowerCase() === 'admin';
+        
         // Mock successful login for demo purposes
         const mockUser = {
-          id: '123',
+          id: isAdminEmail ? 'admin123' : '123',
           username: email.split('@')[0],
           email: email,
-          role: 'player' as const,
+          role: isAdminEmail ? 'admin' as const : 'player' as const,
           gameIDs: {},
           wallet: {
-            balance: 1000,
+            balance: isAdminEmail ? 5000 : 1000,
             totalEarnings: 0,
             totalSpent: 0
           },
@@ -199,7 +204,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(mockToken);
         setRefreshToken(mockRefreshToken);
         
-        console.log('✅ Login successful (Demo Mode)');
+        console.log(`✅ Login successful (${isAdminEmail ? 'Admin' : 'Player'} Mode)`);
         return { success: true, message: 'Login successful!' };
       }
       
@@ -232,14 +237,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Fallback to mock auth on error
       console.log('⚠️ Backend unavailable, using demo mode');
       
+      // Check if this is admin login
+      const isAdminEmail = email.toLowerCase().includes('admin') || 
+                          email === 'admin@esportsarena.com' ||
+                          email.toLowerCase() === 'admin';
+      
       const mockUser = {
-        id: '123',
+        id: isAdminEmail ? 'admin123' : '123',
         username: email.split('@')[0],
         email: email,
-        role: 'player' as const,
+        role: isAdminEmail ? 'admin' as const : 'player' as const,
         gameIDs: {},
         wallet: {
-          balance: 1000,
+          balance: isAdminEmail ? 5000 : 1000,
           totalEarnings: 0,
           totalSpent: 0
         },

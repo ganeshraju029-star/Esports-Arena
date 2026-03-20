@@ -1,13 +1,16 @@
 [build]
   command = "npm run build"
-  publish = ".next"
+  publish = "out"
 
-# Handle API routes - let Next.js plugin handle them
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
 
 [build.environment]
   NODE_VERSION = "20"

@@ -174,8 +174,8 @@ export default function TournamentsPage() {
           {/* Active Filters */}
           {activeFilters.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
-              {activeFilters.map((filter) => (
-                <Badge key={filter} variant="secondary" className="flex items-center gap-1">
+              {activeFilters.map((filter, index) => (
+                <Badge key={`${filter}-${index}`} variant="secondary" className="flex items-center gap-1">
                   {filter}
                   <X className="h-3 w-3 cursor-pointer" onClick={clearAllFilters} />
                 </Badge>

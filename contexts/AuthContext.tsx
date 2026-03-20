@@ -102,8 +102,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await authAPI.getProfile();
-      setUser(response.data.data.user);
+      // In static export, we can't fetch user profile
+      // Use mock user data or return early
+      if (typeof window === 'undefined') return;
+      
+      // For static build, skip profile fetching
+      return;
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       clearAuth();
@@ -202,13 +206,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      if (token) {
-        await authAPI.logout();
-      }
+      // In static export, just clear local state
+      clearAuth();
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
-      clearAuth();
     }
   };
 
@@ -243,12 +244,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const updateProfile = async (userData: any) => {
     try {
       setIsLoading(true);
-      const response = await authAPI.updateProfile(userData);
-      setUser(response.data.data.user);
+      // In static export, just update local state
+      if (user) {
+        setUser({ ...user, ...userData });
+      }
       return { success: true, message: 'Profile updated successfully' };
     } catch (error: any) {
-      const errorInfo = handleApiError(error);
-      return { success: false, message: errorInfo.message };
+      return { success: false, message: error.message || 'Profile update failed' };
     } finally {
       setIsLoading(false);
     }

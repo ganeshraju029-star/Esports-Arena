@@ -5,13 +5,10 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  assetPrefix: process.env.NODE_ENV === 'production' ? '' : undefined,
-  basePath: process.env.NODE_ENV === 'production' ? '' : undefined,
-  distDir: '.next',
+  distDir: 'out',
   generateEtags: false,
   poweredByHeader: false,
   reactStrictMode: true,
-  swcMinify: true,
 }
 
 module.exports = nextConfig

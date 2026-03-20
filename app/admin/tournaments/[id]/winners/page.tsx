@@ -1,6 +1,3 @@
-"use client"
-
-import { useState } from "react"
 import { AdminSidebar } from "@/components/admin-sidebar"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,15 +5,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Trophy,
+  Users,
+  DollarSign,
+  Save,
   ArrowLeft,
+  Plus,
+  X,
   Medal,
   Award,
   Crown,
@@ -24,9 +19,180 @@ import {
   Search,
 } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+
+export async function generateStaticParams() {
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' }
+  ]
+}
 
 // Sample data
+const tournament = {
+  id: "1",
+  title: "Free Fire Championship",
+  totalPrizePool: 5000,
+  registeredPlayers: [
+    { id: "1", name: "ShadowStrike", avatar: "SS", kills: 12, position: 1 },
+    { id: "2", name: "PhoenixRise", avatar: "PR", kills: 10, position: 2 },
+    { id: "3", name: "NightHawk", avatar: "NH", kills: 8, position: 3 },
+    { id: "4", name: "ThunderBolt", avatar: "TB", kills: 6, position: 4 },
+    { id: "5", name: "VenomKing", avatar: "VK", kills: 4, position: 5 },
+  ]
+}
+
+export default function TournamentWinnersPage({ params }: { params: { id: string } }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <AdminSidebar />
+
+      <main className="lg:ml-64 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <Link
+              href="/admin/tournaments"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Tournaments
+            </Link>
+            <h1 className="font-[var(--font-orbitron)] text-2xl sm:text-3xl font-bold text-foreground">
+              Tournament <span className="text-primary">Winners</span>
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              Manage prize distribution for {tournament.title}
+            </p>
+          </div>
+
+          {/* Prize Distribution */}
+          <Card className="p-6 bg-card border-border mb-8">
+            <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-primary" />
+              Prize Distribution
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {tournament.registeredPlayers.slice(0, 3).map((player, index) => (
+                <div
+                  key={player.id}
+                  className={`relative p-6 rounded-lg border-2 ${
+                    index === 0
+                      ? "border-yellow-500 bg-yellow-500/10"
+                      : index === 1
+                      ? "border-gray-400 bg-gray-400/10"
+                      : "border-orange-600 bg-orange-600/10"
+                  }`}
+                >
+                  <div className="absolute top-2 right-2">
+                    {index === 0 && <Crown className="h-6 w-6 text-yellow-500" />}
+                    {index === 1 && <Award className="h-6 w-6 text-gray-400" />}
+                    {index === 2 && <Medal className="h-6 w-6 text-orange-600" />}
+                  </div>
+                  
+                  <div className="flex items-center gap-4 mb-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {player.avatar}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold text-foreground">{player.name}</h3>
+                      <p className="text-sm text-muted-foreground">{player.kills} kills</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor={`position-${player.id}`} className="text-sm text-muted-foreground">Position</Label>
+                      <Input
+                        id={`position-${player.id}`}
+                        type="number"
+                        defaultValue={player.position}
+                        className="mt-1"
+                        min="1"
+                        max={tournament.registeredPlayers.length}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`prize-${player.id}`} className="text-sm text-muted-foreground">Prize Amount (₹)</Label>
+                      <Input
+                        id={`prize-${player.id}`}
+                        type="number"
+                        defaultValue={index === 0 ? 2500 : index === 1 ? 1500 : 700}
+                        className="mt-1"
+                        min="0"
+                        max={tournament.totalPrizePool}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 p-4 rounded-lg bg-muted/30">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Total Prize Pool:</span>
+                <span className="text-xl font-bold text-primary">₹{tournament.totalPrizePool.toLocaleString()}</span>
+              </div>
+            </div>
+          </Card>
+
+          {/* All Players */}
+          <Card className="p-6 bg-card border-border">
+            <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              All Players
+            </h2>
+            
+            <div className="space-y-3">
+              {tournament.registeredPlayers.map((player) => (
+                <div key={player.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {player.avatar}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h4 className="font-medium text-foreground">{player.name}</h4>
+                      <p className="text-sm text-muted-foreground">{player.kills} kills</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Position</p>
+                      <p className="font-medium text-foreground">#{player.position}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Prize</p>
+                      <p className="font-medium text-primary">
+                        ₹{player.position === 1 ? 2500 : player.position === 2 ? 1500 : player.position === 3 ? 700 : 0}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-4 mt-8">
+            <Button variant="outline">
+              <X className="mr-2 h-4 w-4" />
+              Cancel
+            </Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Save className="mr-2 h-4 w-4" />
+              Save Prize Distribution
+            </Button>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
 const tournament = {
   id: "1",
   title: "Free Fire Championship Season 5",

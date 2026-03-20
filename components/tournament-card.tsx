@@ -19,14 +19,17 @@ export interface Tournament {
   mode: "Solo" | "Duo" | "Squad"
   level: "Easy" | "Medium" | "Hard"
   status: "upcoming" | "live" | "completed"
+  isJoined: boolean
+  canJoin: boolean
 }
 
 interface TournamentCardProps {
   tournament: Tournament
   variant?: "default" | "featured"
+  onJoin?: () => void
 }
 
-export function TournamentCard({ tournament, variant = "default" }: TournamentCardProps) {
+export function TournamentCard({ tournament, variant = "default", onJoin }: TournamentCardProps) {
   const isFree = tournament.entryFee === 0
   const slotsLeft = tournament.slots - tournament.filledSlots
   const isAlmostFull = slotsLeft <= tournament.slots * 0.2

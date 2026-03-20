@@ -1,19 +1,9 @@
-"use client"
-
-import { useState } from "react"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import {
   Trophy,
   Calendar,
@@ -27,6 +17,14 @@ import {
   Info,
 } from "lucide-react"
 import Link from "next/link"
+
+export async function generateStaticParams() {
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' }
+  ]
+}
 
 // Sample tournament data
 const tournament = {
@@ -66,19 +64,7 @@ const tournament = {
   ],
 }
 
-export default function TournamentDetailPage() {
-  const [joinDialogOpen, setJoinDialogOpen] = useState(false)
-  const [joined, setJoined] = useState(false)
-  const [isJoining, setIsJoining] = useState(false)
-
-  const handleJoin = async () => {
-    setIsJoining(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsJoining(false)
-    setJoined(true)
-    setTimeout(() => setJoinDialogOpen(false), 1500)
-  }
-
+export default function TournamentDetailPage({ params }: { params: { id: string } }) {
   const slotsLeft = tournament.slots - tournament.filledSlots
   const isFree = tournament.entryFee === 0
 
@@ -197,10 +183,12 @@ export default function TournamentDetailPage() {
 
                 <Button
                   className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 glow-pulse font-semibold"
-                  onClick={() => setJoinDialogOpen(true)}
+                  asChild
                 >
-                  <Trophy className="mr-2 h-5 w-5" />
-                  Join Tournament
+                  <Link href="/login">
+                    <Trophy className="mr-2 h-5 w-5" />
+                    Join Tournament
+                  </Link>
                 </Button>
 
                 <Button variant="outline" className="w-full mt-3 border-border">
@@ -291,68 +279,6 @@ export default function TournamentDetailPage() {
       </main>
 
       <Footer />
-
-      {/* Join Dialog */}
-      <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Join Tournament</DialogTitle>
-            <DialogDescription>
-              {tournament.title}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            {joined ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-4">
-                  <Check className="h-8 w-8 text-green-500" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">Successfully Joined!</h3>
-                <p className="text-muted-foreground">
-                  You&apos;ve been registered for this tournament. Check your dashboard for updates.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="p-4 rounded-lg bg-muted/30 border border-border mb-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-muted-foreground">Entry Fee</span>
-                    <span className={isFree ? "text-green-500 font-semibold" : "text-foreground font-semibold"}>
-                      {isFree ? "FREE" : `$${tournament.entryFee}`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Mode</span>
-                    <span className="text-foreground">{tournament.mode}</span>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  By joining, you agree to follow all tournament rules and guidelines.
-                </p>
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1" onClick={() => setJoinDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                    onClick={handleJoin}
-                    disabled={isJoining}
-                  >
-                    {isJoining ? (
-                      <span className="flex items-center gap-2">
-                        <span className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                        Joining...
-                      </span>
-                    ) : (
-                      "Confirm Join"
-                    )}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

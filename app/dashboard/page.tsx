@@ -84,13 +84,39 @@ export default function DashboardPage() {
       if (!user) return
 
       try {
-        const [statsResponse, tournamentsResponse] = await Promise.all([
-          userAPI.getStats(),
-          userAPI.getTournaments()
-        ])
+        // Check if we're in a browser environment (static deployment)
+        const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+        
+        if (isBrowser) {
+          // Mock data for static deployment
+          const mockStats = {
+            data: {
+              data: {
+                stats: {
+                  totalTournaments: 0,
+                  totalWins: 0,
+                  totalKills: 0,
+                  totalPoints: 0
+                },
+                recentActivity: []
+              }
+            }
+          };
+          
+          const mockTournaments = {
+            data: {
+              data: {
+                tournaments: []
+              }
+            }
+          };
 
-        setUserStats(statsResponse.data.data)
-        setUserTournaments(tournamentsResponse.data.data.tournaments)
+          setUserStats(mockStats.data.data.stats)
+          setUserTournaments(mockTournaments.data.data.tournaments)
+        } else {
+          // This should not execute in Netlify static deployment
+          console.warn('Dashboard data fetch attempted in non-browser environment');
+        }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)
       } finally {

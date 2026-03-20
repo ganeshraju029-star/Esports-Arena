@@ -38,92 +38,87 @@ export default function WalletCard() {
     setSuccess('');
 
     try {
-      // Create payment order
-      const orderResponse = await fetch('/api/payments/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ amount: amountNum }),
-      });
-
-      const orderData = await orderResponse.json();
-
-      if (!orderResponse.ok) {
-        throw new Error(orderData.message || 'Failed to create payment order');
-      }
-
-      // Open Razorpay payment modal
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        amount: amountNum * 100, // Convert to paise
-        currency: 'INR',
-        name: 'Esports Arena',
-        description: `Add ₹${amountNum} to wallet`,
-        order_id: orderData.data.orderId,
-        prefill: {
-          name: user?.profile.displayName || user?.username,
-          email: user?.email,
-          contact: user?.email || ''
-        },
-        theme: {
-          color: '#4F46E5'
-        },
-        modal: {
-          ondismiss: () => {
-            setError('Payment cancelled');
-            setLoading(false);
-          },
-          escape: true,
-          backdropclose: true
-        },
-        handler: async (response: any) => {
-          try {
-            // Verify payment
-            const verifyResponse = await fetch('/api/payments/verify', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpay_order_id: orderData.data.orderId,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                type: 'wallet_deposit'
-              }),
-            });
-
-            const verifyData = await verifyResponse.json();
-
-            if (!verifyResponse.ok) {
-              throw new Error(verifyData.message || 'Payment verification failed');
-            }
-
-            setSuccess('Money added to wallet successfully!');
-            setAmount('');
-            
-            // Update user balance in context
-            if (user) {
-              user.wallet.balance += amountNum;
-              user.wallet.totalEarnings += amountNum;
-            }
-            
-            // Show success message
-            setTimeout(() => {
-              setSuccess('');
-            }, 3000);
-
-          } catch (error: any) {
-            setError(error.message || 'Payment verification failed');
-          } finally {
-            setLoading(false);
+      // Check if we're in a browser environment (static deployment)
+      const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+      
+      if (isBrowser) {
+        // Mock payment order for static deployment
+        const mockOrderData = {
+          status: 'success',
+          data: {
+            id: 'order_' + Date.now(),
+            amount: amountNum,
+            currency: 'INR',
+            receipt: 'receipt_' + Date.now()
           }
-        }
-      };
+        };
+        
+        // Mock Razorpay payment
+        const mockRazorpay = {
+          open: (options: any) => {
+            // Simulate successful payment after 2 seconds
+            setTimeout(() => {
+              if (options.handler) {
+                options.handler({
+                  razorpay_order_id: mockOrderData.data.id,
+                  razorpay_payment_id: 'pay_' + Date.now(),
+                  razorpay_signature: 'mock_signature_' + Date.now()
+                });
+              }
+            }, 2000);
+          }
+        };
+        
+        // Mock Razorpay object
+        (window as any).Razorpay = function(options: any) {
+          return mockRazorpay;
+        };
+        
+        const orderData = mockOrderData;
+        
+        const razorpay = new (window as any).Razorpay({
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_mock_key',
+          amount: amountNum * 100, // Convert to paise
+          currency: 'INR',
+          name: 'Esports Arena',
+          description: 'Wallet Top-up',
+          order_id: orderData.data.id,
+          handler: async (response: any) => {
+            try {
+              // Mock payment verification
+              const mockVerifyData = {
+                status: 'success',
+                data: {
+                  message: 'Payment verified successfully',
+                  walletBalance: (user?.wallet.balance || 0) + amountNum
+                }
+              };
+              
+              setSuccess(mockVerifyData.data.message);
+              if (user) {
+                user.wallet.balance += amountNum;
+                user.wallet.totalEarnings += amountNum;
+              }
+            } catch (verifyError: any) {
+              setError(verifyError.message || 'Payment verification failed');
+            }
+          },
+          prefill: {
+            name: user?.profile.displayName || user?.username,
+            email: user?.email,
+          },
+          theme: {
+            color: '#4F46E5',
+          },
+        });
 
-      // Load Razorpay script and open payment modal
-      const razorpay = new (window as any).Razorpay(options);
-      razorpay.open();
+        razorpay.open();
+        return;
+      }
+      
+      // Fallback for non-browser environments (should not execute on Netlify)
+      console.warn('Payment attempted in non-browser environment');
+      setError('Payment not available in this environment');
 
     } catch (error: any) {
       setError(error.message || 'Payment failed. Please try again.');

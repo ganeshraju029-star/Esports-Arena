@@ -118,6 +118,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
+      
+      // For static build on Netlify, use mock authentication
+      if (typeof window !== 'undefined') {
+        // Mock successful login for demo purposes
+        const mockUser = {
+          id: '123',
+          username: email.split('@')[0],
+          email: email,
+          role: 'player',
+          walletBalance: 1000,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        const mockToken = 'mock_jwt_token_' + Date.now();
+        const mockRefreshToken = 'mock_refresh_token_' + Date.now();
+        
+        localStorage.setItem('token', mockToken);
+        localStorage.setItem('refreshToken', mockRefreshToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        
+        setUser(mockUser);
+        setToken(mockToken);
+        setRefreshToken(mockRefreshToken);
+        
+        return { success: true, message: 'Login successful' };
+      }
+      
+      // Fallback to API call if not in browser
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -132,18 +161,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(data.message || 'Login failed');
       }
 
-      const { user: userData, token: newToken, refreshToken: newRefreshToken } = data.data;
-      
-      setToken(newToken);
-      setRefreshToken(newRefreshToken);
+      const { user: userData, token: authToken, refreshToken: authRefreshToken } = data.data;
+
+      localStorage.setItem('token', authToken);
+      localStorage.setItem('refreshToken', authRefreshToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+
       setUser(userData);
-      
-      // Store in localStorage
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('refreshToken', newRefreshToken);
-      
+      setToken(authToken);
+      setRefreshToken(authRefreshToken);
+
       return { success: true, message: 'Login successful' };
     } catch (error: any) {
+      console.error('Login error:', error);
       return { success: false, message: error.message || 'Login failed' };
     } finally {
       setIsLoading(false);
@@ -154,6 +184,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
+      // For static build on Netlify, use mock registration
+      if (typeof window !== 'undefined') {
+        // Mock successful registration for demo purposes
+        const mockUser = {
+          id: '123',
+          username: userData.username,
+          email: userData.email,
+          role: userData.role || 'player',
+          walletBalance: 1000,
+          gameIDs: userData.gameIDs || {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        const mockToken = 'mock_jwt_token_' + Date.now();
+        const mockRefreshToken = 'mock_refresh_token_' + Date.now();
+        
+        localStorage.setItem('token', mockToken);
+        localStorage.setItem('refreshToken', mockRefreshToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        
+        setUser(mockUser);
+        setToken(mockToken);
+        setRefreshToken(mockRefreshToken);
+        
+        return { success: true, message: 'Registration successful' };
+      }
+      
+      // Fallback to API call if not in browser
       // Create FormData for register API
       const formData = new FormData();
       formData.append('username', userData.username);

@@ -12,12 +12,14 @@ import {
   Trophy,
   Users,
   Gamepad2,
-  TrendingUp,
   DollarSign,
   Activity,
   Eye,
   Edit,
   Trash2,
+  TrendingUp,
+  Calendar,
+  Clock,
 } from "lucide-react"
 
 export default function AdminPage() {
@@ -178,51 +180,74 @@ export default function AdminPage() {
       <div className="flex">
         <AdminSidebar />
         
-        <main className="flex-1 p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground mt-2">
-              Welcome back, {user?.profile.displayName || user?.username}!
-            </p>
+        <main className="flex-1 p-8 lg:ml-64">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+              <p className="text-muted-foreground">
+                Welcome back, {user?.profile.displayName || user?.username}!
+              </p>
+            </div>
+            <div className="mt-4 md:mt-0 flex gap-2">
+              <Button variant="outline" size="sm">
+                <Calendar className="h-4 w-4 mr-2" />
+                Last 7 days
+              </Button>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" size="sm">
+                Download Report
+              </Button>
+            </div>
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {statCards.map((stat, index) => (
-              <Card key={index} className="p-6">
+              <Card key={index} className="p-6 border-border bg-card hover:shadow-lg transition-shadow">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl font-bold text-foreground mt-2">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                      <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                      <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
+                    </div>
                   </div>
-                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                  </div>
+                </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <span className="text-xs text-green-500 font-medium">{stat.change}</span>
                 </div>
               </Card>
             ))}
           </div>
 
           {/* Recent Tournaments */}
-          <Card className="p-6">
+          <Card className="p-6 border-border bg-card">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-foreground">Recent Tournaments</h2>
-              <Button variant="outline" size="sm">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Recent Tournaments</h2>
+                <p className="text-sm text-muted-foreground mt-1">Manage your latest tournaments</p>
+              </div>
+              <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10">
                 View All
               </Button>
             </div>
 
             <div className="space-y-4">
               {recentTournaments.map((tournament: any) => (
-                <div key={tournament._id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-primary/10 rounded-lg">
+                <div 
+                  key={tournament._id} 
+                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-lg">
                       <Gamepad2 className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-foreground">{tournament.title}</h3>
-                      <div className="flex items-center space-x-2 mt-1">
+                      <h3 className="font-semibold text-foreground">{tournament.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
                         <Badge variant="secondary" className="text-xs">
                           {tournament.game.toUpperCase()}
                         </Badge>
@@ -232,24 +257,28 @@ export default function AdminPage() {
                         >
                           {tournament.status}
                         </Badge>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(tournament.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <p className="text-sm font-medium text-foreground">{tournament.participants} participants</p>
-                      <p className="text-xs text-muted-foreground">₹{tournament.prizePool.toLocaleString()}</p>
+                      <p className="text-sm font-semibold text-foreground">{tournament.participants} players</p>
+                      <p className="text-xs text-muted-foreground">Prize: ₹{tournament.prizePool.toLocaleString()}</p>
                     </div>
                     
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -257,6 +286,17 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+
+            {recentTournaments.length === 0 && (
+              <div className="text-center py-12">
+                <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">No tournaments yet</h3>
+                <p className="text-muted-foreground mb-4">Create your first tournament to get started</p>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Create Tournament
+                </Button>
+              </div>
+            )}
           </Card>
         </main>
       </div>

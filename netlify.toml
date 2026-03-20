@@ -1,25 +1,10 @@
 [build]
   command = "npm run build"
-  publish = "out"
+  publish = ".next"
 
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/dashboard/*"
-  to = "/dashboard/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/tournaments/*"
-  to = "/tournaments/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/login/*"
-  to = "/login/index.html"
   status = 200
 
 [[redirects]]

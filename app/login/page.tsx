@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Gamepad2, Mail, Lock, User, Eye, EyeOff, ArrowLeft, Shield } from "lucide-react"
@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login"
@@ -429,3 +429,13 @@ export default function LoginPage() {
     </div>
   )
 }
+
+function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
+  )
+}
+
+export default LoginPage

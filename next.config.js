@@ -6,12 +6,13 @@ const nextConfig = {
     unoptimized: true
   },
   reactStrictMode: true,
-  // Only enable rewrites in development mode
+  // Enable rewrites only in development mode without static export
   ...(process.env.NODE_ENV === 'development' && {
+    output: undefined, // Override static export in development
     async rewrites() {
       return [
         {
-          source: '/api/*',
+          source: '/api/:path*',
           destination: 'http://localhost:5000/api/:path*',
         },
       ];

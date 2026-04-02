@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import config from '@/lib/config';
 
 interface User {
   id: string;
@@ -156,9 +157,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       
       // Always use mock authentication for demo/Netlify deployment
-      // This ensures the site works without requiring a backend server
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const useMockAuth = !apiBaseUrl || apiBaseUrl.includes('localhost') || process.env.NODE_ENV === 'production';
+      // This ensures site works without requiring a backend server
+      const useMockAuth = config.USE_MOCK_DATA();
       
       if (useMockAuth) {
         // Check if this is admin login
@@ -209,7 +209,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       
       // In development with backend URL configured, use real API call
-      const response = await fetch(`${apiBaseUrl}/auth/login`, {
+      const response = await fetch(`${config.API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -290,8 +290,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       
       // Always use mock registration for demo/Netlify deployment
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const useMockAuth = !apiBaseUrl || apiBaseUrl.includes('localhost') || process.env.NODE_ENV === 'production';
+      const useMockAuth = config.USE_MOCK_DATA();
       
       if (useMockAuth) {
         // Mock successful registration for demo purposes
@@ -337,7 +336,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       
       // In development with backend URL configured, use real API call
-      const response = await fetch(`${apiBaseUrl}/auth/register`, {
+      const response = await fetch(`${config.API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

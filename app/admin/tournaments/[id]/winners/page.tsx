@@ -1,17 +1,7 @@
-"use client"
-
-import { useState } from "react"
 import { AdminSidebar } from "@/components/admin-sidebar"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
+import { Badge } from "@/components/ui/badge"
   SelectValue,
 } from "@/components/ui/select"
 import {
@@ -26,82 +16,21 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-// Sample data
-const tournament = {
-  id: "1",
-  title: "Free Fire Championship Season 5",
-  game: "Free Fire",
-  prizePool: 5000,
+// Generate static params for Next.js export
+export async function generateStaticParams() {
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' }
+  ];
 }
 
-const participants = [
-  { id: "1", name: "ShadowStrike", avatar: "SS", points: 0 },
-  { id: "2", name: "PhoenixRise", avatar: "PR", points: 0 },
-  { id: "3", name: "NightHawk", avatar: "NH", points: 0 },
-  { id: "4", name: "ThunderBolt", avatar: "TB", points: 0 },
-  { id: "5", name: "VenomKing", avatar: "VK", points: 0 },
-  { id: "6", name: "BlazeFury", avatar: "BF", points: 0 },
-  { id: "7", name: "StormBreaker", avatar: "SB", points: 0 },
-  { id: "8", name: "IronWolf", avatar: "IW", points: 0 },
-]
-
-const prizePositions = [
-  { position: 1, label: "1st Place", prize: 2500, icon: Crown, color: "text-yellow-500" },
-  { position: 2, label: "2nd Place", prize: 1500, icon: Medal, color: "text-gray-400" },
-  { position: 3, label: "3rd Place", prize: 700, icon: Award, color: "text-orange-600" },
-]
-
-export default function DeclareWinnersPage() {
-  const router = useRouter()
-  const [winners, setWinners] = useState<{ [key: number]: string }>({})
-  const [search, setSearch] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [success, setSuccess] = useState(false)
-
-  const filteredParticipants = participants.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const handleSelectWinner = (position: number, playerId: string) => {
-    setWinners((prev) => ({ ...prev, [position]: playerId }))
-  }
-
-  const getSelectedPlayer = (playerId: string) => {
-    return participants.find((p) => p.id === playerId)
-  }
-
-  const isPlayerSelected = (playerId: string) => {
-    return Object.values(winners).includes(playerId)
-  }
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setSuccess(true)
-    setTimeout(() => {
-      router.push("/admin/tournaments")
-    }, 2000)
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-background">
-        <AdminSidebar />
-        <main className="lg:ml-64 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 flex items-center justify-center min-h-screen">
-          <Card className="p-8 bg-card border-border text-center max-w-md">
-            <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-4">
-              <Check className="h-8 w-8 text-green-500" />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Winners Declared!</h2>
-            <p className="text-muted-foreground mb-4">
-              The winners have been announced and prizes will be distributed to their wallets.
-            </p>
-            <p className="text-sm text-muted-foreground">Redirecting to tournaments...</p>
-          </Card>
-        </main>
-      </div>
-    )
+export default function DeclareWinnersPage({ params }: { params: { id: string } }) {
+  const tournament = {
+    id: params.id,
+    title: "Free Fire Championship Season 5",
+    game: "Free Fire",
+    prizePool: 5000,
   }
 
   return (

@@ -2,11 +2,7 @@
   command = "npm run build"
   publish = "out"
 
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
+# SPA fallback — serve index.html for all client-side routes
 [[redirects]]
   from = "/*"
   to = "/index.html"
